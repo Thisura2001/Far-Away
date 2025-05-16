@@ -1,115 +1,9 @@
 import './index.css';
 import { useState } from "react";
-
-function Logo() {
-    return <h1>🌴 Far Away 💼</h1>;
-}
-
-function Form({ onAddItems }) {
-    const [description, setDescription] = useState('');
-    const [quantity, setQuantity] = useState(1);
-
-    function handleOnSubmit(e) {
-        e.preventDefault();
-        if (!description) return;
-
-        const newItem = {
-            description,
-            quantity: Number(quantity),
-            packed: false,
-            id: Date.now(),
-        };
-
-        onAddItems(newItem);
-        setDescription('');
-        setQuantity(1);
-    }
-
-    return (
-        <form className="add-form" onSubmit={handleOnSubmit}>
-            <h3>What do you need for your 🥰 trip?</h3>
-            <select value={quantity} onChange={(e) => setQuantity(e.target.value)}>
-                {Array.from({ length: 20 }, (_, i) => i + 1).map((num) => (
-                    <option value={num} key={num}>{num}</option>
-                ))}
-            </select>
-            <input
-                type="text"
-                placeholder="Item..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-            />
-            <button>Add</button>
-        </form>
-    );
-}
-
-function PackingList({ items , onDeleteItem,onUpdateItem}) {
-    const [sortBy,setSortBy] = useState('input')
-    let sortedItems;
-
-    if(sortBy === 'input') {
-        sortedItems = items
-    }
-    if(sortBy==='description') {
-        sortedItems = items
-        .slice().sort((a,b)=>a.description.localeCompare(b.description))
-    }
-
-    if(sortBy==='packed') {
-        sortedItems = items
-        .slice().sort((a,b)=>Number(a.packed)-Number(b.packed))
-    }
-
-    return (
-        <div className="list">
-            <ul>
-                {sortedItems.map((item) => (
-                    <Item item={item} onDeleteItem={()=>onDeleteItem(item.id)}  onUpdateItem={()=>onUpdateItem(item.id)}key={item.id} />
-                ))}
-            </ul>
-            <div className='actions'>
-                <select value={sortBy} onChange={(e)=>setSortBy(e.target.value)}>
-                    <option value='input'>Sort By the Input</option>
-                    <option value='description'>Sort By the Description</option>
-                    <option value='packed'>Sort By the packed status</option>
-                </select>
-            </div>
-        </div>
-    );
-}
-
-function Item({ item , onDeleteItem ,onUpdateItem}) {
-    return (
-        <li>
-            <input type='checkbox'value={item.packed} onChange={()=>{onUpdateItem(item.id)}}/>
-            <span style={item.packed ? { textDecoration: "line-through" } : {}}>
-            {item.quantity} {item.description}
-        </span>
-            <button className="" onClick={onDeleteItem}>❌</button>
-        </li>
-    );
-}
-
-function Stats({ items }) {
-    if(!items.length) return <p className='stats'>
-        <em>Start adding some items to your packing list 🚀</em>
-    </p>
-    const total = items.length;
-    const packed = items.filter((item) => item.packed).length;
-    const percent = total > 0 ? Math.round((packed / total) * 100) : 0;
-
-    return (
-        <footer className="stats">
-            <em>
-                {percent === 100
-                    ? "You got everything packed! 🎉 Happy travels ✈️"
-                    : `You have ${total} item${total !== 1 ? 's' : ''} on your list 📃, and you already packed ${packed} ✅ (${percent}%)`}
-            </em>
-        </footer>
-    );
-}
-
+import  Logo  from './Logo';
+import  Form  from './Form';
+import  PackingList  from './PackingList';
+import  Stats  from './Stats';
 
 function App() {
     const [items, setItems] = useState([]);
@@ -123,12 +17,16 @@ function App() {
     function handleToggle(id){
         setItems((items)=>items.map(item=>item.id === id ? {...item, packed: !item.packed} : item))
     }
+    function clearList(){
+        setItems([]);
+    }
+     
 
     return (
         <div className="app">
             <Logo />
             <Form onAddItems={handleItemAdd} /> 
-            <PackingList items={items} onDeleteItem = {handleDeleteItem} onUpdateItem={handleToggle}/>
+            <PackingList items={items} onDeleteItem = {handleDeleteItem} onUpdateItem={handleToggle} onClearItem={clearList}/>
             <Stats items={items} />
         </div>
     );
